@@ -1,78 +1,78 @@
-// client/src/context/CartContext.jsx
 import { createContext, useState, useContext, useEffect } from 'react';
 
-// 1. Crear el Contexto
 const CartContext = createContext();
 
-// 2. Crear el Hook personalizado para usarlo fácil
 export const useCart = () => useContext(CartContext);
 
-// 3. Crear el Proveedor (El componente que envolverá tu App)
 export const CartProvider = ({ children }) => {
-  // Inicializamos el carrito buscando en LocalStorage (para no perder datos si recarga)
   const [carrito, setCarrito] = useState(() => {
     try {
       const carritoGuardado = localStorage.getItem('cart');
       return carritoGuardado ? JSON.parse(carritoGuardado) : [];
-    } catch (error) {
-      return [];
-    }
+    } catch (error) { return []; }
   });
 
-  // Cada vez que cambie el carrito, guardamos en LocalStorage
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(carrito));
   }, [carrito]);
 
-  // Función: Agregar al carrito
-  const agregarAlCarrito = (producto) => {
-    // Verificamos si ya está en el carrito para aumentar cantidad
-    const existe = carrito.find(item => item._id === producto._id);
+  // --- MODIFICADO: ACEPTA COLOR ---
+  const agregarAlCarrito = (producto, colorSeleccionado = null) => {
+    
+    // Generamos un ID único temporal para el carrito
+    // Si tiene color, el ID es "ID_Producto + Color". Si no, es solo "ID_Producto"
+    const cartItemId = colorSeleccionado 
+      ? `${producto._id}-${colorSeleccionado}` 
+      : producto._id;
+
+    // Buscamos si este ITEM EXACTO ya existe
+    const existe = carrito.find(item => item.cartItemId === cartItemId);
 
     if (existe) {
-      // Si existe, actualizamos su cantidad
       const carritoActualizado = carrito.map(item => 
-        item._id === producto._id ? { ...item, cantidad: item.cantidad + 1 } : item
+        item.cartItemId === cartItemId ? { ...item, cantidad: item.cantidad + 1 } : item
       );
       setCarrito(carritoActualizado);
     } else {
-      // Si no existe, lo agregamos con cantidad 1
-      setCarrito([...carrito, { ...producto, cantidad: 1 }]);
+      // Agregamos el producto con su variante y el ID especial
+      setCarrito([...carrito, { 
+        ...producto, 
+        colorSeleccionado, // Guardamos qué color eligió
+        cartItemId,        // Guardamos el ID compuesto
+        cantidad: 1 
+      }]);
     }
   };
 
-  const disminuirCantidad = (id) => {
-  const itemEncontrado = carrito.find(item => item._id === id);
+  // --- MODIFICADO: USA cartItemId ---
+  const disminuirCantidad = (cartItemId) => {
+    const itemEncontrado = carrito.find(item => item.cartItemId === cartItemId);
 
-  // Si solo queda 1, lo eliminamos del todo
-  if (itemEncontrado.cantidad === 1) {
-    setCarrito(carrito.filter(item => item._id !== id));
-  } else {
-    // Si hay más de 1, restamos una unidad
-    const carritoActualizado = carrito.map(item => 
-      item._id === id ? { ...item, cantidad: item.cantidad - 1 } : item
-    );
-    setCarrito(carritoActualizado);
-  }
-};
-
-  // Función: Eliminar del carrito
-  const eliminarDelCarrito = (id) => {
-    setCarrito(carrito.filter(item => item._id !== id));
+    if (itemEncontrado.cantidad === 1) {
+      setCarrito(carrito.filter(item => item.cartItemId !== cartItemId));
+    } else {
+      const carritoActualizado = carrito.map(item => 
+        item.cartItemId === cartItemId ? { ...item, cantidad: item.cantidad - 1 } : item
+      );
+      setCarrito(carritoActualizado);
+    }
   };
 
-  // Función: Vaciar carrito (para cuando compre)
+  // --- MODIFICADO: USA cartItemId ---
+  const eliminarDelCarrito = (cartItemId) => {
+    setCarrito(carrito.filter(item => item.cartItemId !== cartItemId));
+  };
+
   const vaciarCarrito = () => setCarrito([]);
 
-  // Calcular total
   const totalCompra = carrito.reduce((acc, item) => acc + (item.precio * item.cantidad), 0);
   const cantidadTotal = carrito.reduce((acc, item) => acc + item.cantidad, 0);
 
   return (
     <CartContext.Provider value={{ 
       carrito, 
-      agregarAlCarrito,
-      disminuirCantidad,
+      agregarAlCarrito, 
+      disminuirCantidad, 
       eliminarDelCarrito, 
       vaciarCarrito, 
       totalCompra,

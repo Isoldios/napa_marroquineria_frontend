@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import FormularioProducto from '../components/FormularioProducto'; // IMPORTARLO
+import FormularioProducto from '../components/FormularioProducto';
 import GestorAuxiliares from '../components/GestorAuxiliares';
 
 const AdminPanel = () => {

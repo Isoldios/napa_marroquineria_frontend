@@ -43,7 +43,8 @@ const CartPage = () => {
         </thead>
         <tbody>
           {carrito.map((prod) => (
-            <tr key={prod._id} style={{ borderBottom: '1px solid #eee' }}>
+            // USAMOS prod.cartItemId COMO KEY, NO prod._id
+            <tr key={prod.cartItemId} style={{ borderBottom: '1px solid #eee' }}>
               <td style={{ padding: '10px', display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <img 
                   src={prod.imagen || 'https://via.placeholder.com/50'} 
@@ -54,20 +55,29 @@ const CartPage = () => {
                   <strong>{prod.nombre}</strong>
                   <br />
                   <span style={{ fontSize: '0.9rem', color: '#666' }}>{prod.marca}</span>
+                  
+                  {/* --- MOSTRAR EL COLOR SELECCIONADO --- */}
+                  {prod.colorSeleccionado && (
+                    <div style={{ fontSize: '0.85rem', color: '#007bff', fontWeight: 'bold' }}>
+                      Color: {prod.colorSeleccionado}
+                    </div>
+                  )}
                 </div>
               </td>
               <td style={{ padding: '10px' }}>${prod.precio}</td>
               <td style={{ padding: '10px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  {/* Usamos cartItemId en las funciones */}
                   <button 
-                    onClick={() => disminuirCantidad(prod._id)}
+                    onClick={() => disminuirCantidad(prod.cartItemId)}
                     style={{ width: '30px', height: '30px', cursor: 'pointer', background: '#eee', border: 'none' }}
                   >
                     -
                   </button>
                   <span style={{ margin: '0 10px', fontWeight: 'bold' }}>{prod.cantidad}</span>
+                  {/* Para sumar, llamamos a agregar pasando el mismo producto y color */}
                   <button 
-                    onClick={() => agregarAlCarrito(prod)}
+                    onClick={() => agregarAlCarrito(prod, prod.colorSeleccionado)}
                     style={{ width: '30px', height: '30px', cursor: 'pointer', background: '#eee', border: 'none' }}
                   >
                     +
@@ -79,7 +89,7 @@ const CartPage = () => {
               </td>
               <td style={{ padding: '10px' }}>
                 <button 
-                  onClick={() => eliminarDelCarrito(prod._id)}
+                  onClick={() => eliminarDelCarrito(prod.cartItemId)}
                   style={{ color: 'red', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                   X

@@ -1,8 +1,6 @@
-// client/src/components/FormularioProducto.jsx
 import { useState, useEffect } from 'react';
-// Importamos funciones de Firebase
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../../firebase'; // Importamos nuestra config
+import { storage } from '../../firebase';
 import axios from 'axios';
 
 const FormularioProducto = ({ productoEditar, cerrarFormulario, alGuardar }) => {

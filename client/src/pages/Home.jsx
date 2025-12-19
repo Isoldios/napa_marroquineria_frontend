@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useCart } from '../context/CartContext';
+import ProductCard from '../components/ProductCard';
 
 const Home = () => {
   // Estados de datos
@@ -8,8 +8,6 @@ const Home = () => {
   const [productosFiltrados, setProductosFiltrados] = useState([]); // Los que se ven en pantalla
   const [marcas, setMarcas] = useState([]);
   const [categorias, setCategorias] = useState([]);
-  
-  const { agregarAlCarrito } = useCart();
 
   // Estados de los filtros seleccionados
   const [filtroMarca, setFiltroMarca] = useState('');
@@ -113,29 +111,7 @@ const Home = () => {
       <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
         {productosFiltrados.length > 0 ? (
           productosFiltrados.map((producto) => (
-            <div key={producto._id} style={{ 
-              border: '1px solid #eee', borderRadius: '8px', padding: '15px', width: '250px',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.1)', background: 'white', display: 'flex', flexDirection: 'column'
-            }}>
-              <img 
-                src={producto.imagen || 'https://via.placeholder.com/200x200?text=Sin+Imagen'} 
-                alt={producto.nombre} 
-                style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '4px', marginBottom: '10px' }} 
-              />
-              <h3 style={{ fontSize: '1.1rem', margin: '0 0 5px 0' }}>{producto.nombre}</h3>
-              <p style={{ color: '#666', fontSize: '0.9rem', margin: '0' }}>{producto.marca} - {producto.categoria}</p>
-              <h4 style={{ fontSize: '1.2rem', margin: '10px 0', color: '#333' }}>${producto.precio}</h4>
-              
-              <button 
-                onClick={() => {
-                  agregarAlCarrito(producto);
-                  alert('¡Producto agregado!'); // Opcional: Feedback visual simple
-                }}
-                // style={{ ...estilos }}
-              >
-                Agregar al Carrito
-              </button>
-            </div>
+            <ProductCard key={producto._id} producto={producto} />
           ))
         ) : (
           <p style={{ width: '100%', textAlign: 'center', fontSize: '1.2rem', color: '#888' }}>
