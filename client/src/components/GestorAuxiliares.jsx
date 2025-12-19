@@ -9,6 +9,8 @@ const GestorAuxiliares = () => {
   // Estados para los inputs
   const [nuevaMarca, setNuevaMarca] = useState('');
   const [nuevaCategoria, setNuevaCategoria] = useState('');
+  const [colores, setColores] = useState([]);
+  const [nuevoColor, setNuevoColor] = useState('');
 
   // URLs (Ajustar si usas Render)
   const API_URL = `${import.meta.env.VITE_API_URL}/auxiliares`; 
@@ -18,8 +20,10 @@ const GestorAuxiliares = () => {
     try {
       const resMarcas = await axios.get(`${API_URL}/marcas`);
       const resCategorias = await axios.get(`${API_URL}/categorias`);
+      const resColores = await axios.get(`${API_URL}/colores`);
       setMarcas(resMarcas.data);
       setCategorias(resCategorias.data);
+      setColores(resColores.data);
     } catch (error) {
       console.error(error);
     }
@@ -35,9 +39,14 @@ const GestorAuxiliares = () => {
       if (tipo === 'marca') {
         await axios.post(`${API_URL}/marcas`, { nombre: nuevaMarca });
         setNuevaMarca('');
-      } else {
+      } 
+      else if (tipo === 'categoria') {
         await axios.post(`${API_URL}/categorias`, { nombre: nuevaCategoria });
         setNuevaCategoria('');
+      }
+      else if (tipo === 'color') {
+        await axios.post(`${API_URL}/colores`, { nombre: nuevoColor });
+        setNuevoColor('');
       }
       cargarDatos(); // Recargar listas
     } catch (error) {
@@ -79,6 +88,22 @@ const GestorAuxiliares = () => {
               placeholder="Nueva Categoría" 
             />
             <button onClick={() => guardar('categoria')}>Agregar</button>
+          </div>
+        </div>
+
+        {/* SECCION COLORES */}
+        <div>
+          <h4>Colores</h4>
+          <ul>
+            {colores.map(c => <li key={c._id}>{c.nombre}</li>)}
+          </ul>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <input 
+              value={nuevoColor} 
+              onChange={e => setNuevoColor(e.target.value)} 
+              placeholder="Nuevo Color" 
+            />
+            <button onClick={() => guardar('color')}>Agregar</button>
           </div>
         </div>
       </div>

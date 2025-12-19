@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useCart } from '../context/CartContext';
 
 const Home = () => {
   // Estados de datos
@@ -7,6 +8,8 @@ const Home = () => {
   const [productosFiltrados, setProductosFiltrados] = useState([]); // Los que se ven en pantalla
   const [marcas, setMarcas] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  
+  const { agregarAlCarrito } = useCart();
 
   // Estados de los filtros seleccionados
   const [filtroMarca, setFiltroMarca] = useState('');
@@ -123,10 +126,13 @@ const Home = () => {
               <p style={{ color: '#666', fontSize: '0.9rem', margin: '0' }}>{producto.marca} - {producto.categoria}</p>
               <h4 style={{ fontSize: '1.2rem', margin: '10px 0', color: '#333' }}>${producto.precio}</h4>
               
-              <button style={{ 
-                marginTop: 'auto', padding: '10px', background: '#222', color: 'white', 
-                border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' 
-              }}>
+              <button 
+                onClick={() => {
+                  agregarAlCarrito(producto);
+                  alert('¡Producto agregado!'); // Opcional: Feedback visual simple
+                }}
+                // style={{ ...estilos }}
+              >
                 Agregar al Carrito
               </button>
             </div>

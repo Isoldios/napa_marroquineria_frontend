@@ -8,9 +8,6 @@ const AdminPanel = () => {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [productoAEditar, setProductoAEditar] = useState(null);
 
-  // IMPORTANTE: Si ya tienes el deploy, usa tu URL de Render aquí.
-  // Si sigues en local, usa localhost:4000.
-  // Tip profesional: Crea un archivo .env en el cliente para esto (VITE_API_URL)
   const API_URL = `${import.meta.env.VITE_API_URL}/productos`; 
 
   const obtenerProductos = async () => {

@@ -1,0 +1,28 @@
+import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+
+const Navbar = () => {
+  const { cantidadTotal } = useCart();
+
+  return (
+    <nav style={{ 
+      background: '#333', color: '#fff', padding: '15px 30px', 
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center' 
+    }}>
+      <Link to="/" style={{ color: 'white', textDecoration: 'none', fontSize: '1.5rem', fontWeight: 'bold' }}>
+        Napa Marroquinería
+      </Link>
+
+      <div style={{ display: 'flex', gap: '20px' }}>
+        <Link to="/admin" style={{ color: '#aaa', textDecoration: 'none' }}>Admin</Link>
+        
+        {/* Enlace al Carrito (luego crearemos la página /carrito) */}
+        <Link to="/carrito" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>
+          🛒 Carrito ({cantidadTotal})
+        </Link>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;

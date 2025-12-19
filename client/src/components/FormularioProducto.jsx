@@ -11,43 +11,81 @@ const FormularioProducto = ({ productoEditar, cerrarFormulario, alGuardar }) => 
     marca: '',
     categoria: '',
     precio: '',
-    stock: '',
     descripcion: '',
-    imagen: ''
+    imagen: '',
+    stock: '', // Stock simple
+    tieneColores: false, // Switch
+    stockPorColor: [] // Array de objetos { nombre: 'Rojo', cantidad: 10 }
   });
 
   const [subiendo, setSubiendo] = useState(false); // Para mostrar "Cargando..."
   // NUEVOS ESTADOS PARA LAS LISTAS DESPLEGABLES
   const [listaMarcas, setListaMarcas] = useState([]);
   const [listaCategorias, setListaCategorias] = useState([]);
+  const [listaColores, setListaColores] = useState([]);
 
-  const API_AUXILIARES = `${import.meta.env.VITE_API_URL}/auxiliares`;
+  const [varianteTemp, setVarianteTemp] = useState({ colorSeleccionado: '', cantidad: '' });
+
+  const API_URL = `${import.meta.env.VITE_API_URL}/auxiliares`;
 
   useEffect(() => {
     const cargarListas = async () => {
       try {
-        const resMarcas = await axios.get(`${API_AUXILIARES}/marcas`);
-        const resCat = await axios.get(`${API_AUXILIARES}/categorias`);
-        setListaMarcas(resMarcas.data);
+        const [resM, resCat, resCol] = await Promise.all([
+          axios.get(`${API_URL}/marcas`),
+          axios.get(`${API_URL}/categorias`),
+          axios.get(`${API_URL}/colores`)
+        ]);
+        setListaMarcas(resM.data);
         setListaCategorias(resCat.data);
-      } catch (error) {
-        console.error("Error cargando listas");
-      }
+        setListaColores(resCol.data);
+      } catch (error) { console.error("Error cargando listas", error); }
     };
     cargarListas();
   }, []);
 
   useEffect(() => {
     if (productoEditar) {
-      setFormData(productoEditar);
+      setFormData({
+        ...productoEditar,
+        stockPorColor: productoEditar.stockPorColor || []
+      });
     }
   }, [productoEditar]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
-  // ---> NUEVA FUNCIÓN: MANEJAR SUBIDA DE ARCHIVO
+  const agregarVariante = () => {
+    if (!varianteTemp.colorSeleccionado || !varianteTemp.cantidad) return alert("Elige color y cantidad");
+    
+    // Evitar duplicados (ej: agregar Rojo dos veces)
+    const existe = formData.stockPorColor.find(item => item.nombre === varianteTemp.colorSeleccionado);
+    if (existe) return alert("Ese color ya está en la lista. Bórralo y agrégalo de nuevo si quieres cambiarlo.");
+
+    const nuevaVariante = {
+      nombre: varianteTemp.colorSeleccionado,
+      cantidad: Number(varianteTemp.cantidad)
+    };
+
+    setFormData({
+      ...formData,
+      stockPorColor: [...formData.stockPorColor, nuevaVariante]
+    });
+    
+    // Limpiar inputs temporales
+    setVarianteTemp({ colorSeleccionado: '', cantidad: '' });
+  };
+
+  const eliminarVariante = (nombreColor) => {
+    setFormData({
+      ...formData,
+      stockPorColor: formData.stockPorColor.filter(item => item.nombre !== nombreColor)
+    });
+  };
+
   const handleFileChange = async (e) => {
     const archivo = e.target.files[0];
 
@@ -79,59 +117,115 @@ const FormularioProducto = ({ productoEditar, cerrarFormulario, alGuardar }) => 
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (formData.tieneColores && formData.stockPorColor.length === 0) {
+      return alert("Activaste 'Tiene Colores' pero no agregaste ninguno.");
+    }
     alGuardar(formData);
   };
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
-    }}>
-      <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '400px', maxHeight: '90vh', overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+      <div style={{ background: 'white', padding: '20px', borderRadius: '8px', width: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
         <h2>{productoEditar ? 'Editar Producto' : 'Nuevo Producto'}</h2>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <input name="nombre" placeholder="Nombre" value={formData.nombre} onChange={handleChange} required />
-          <label>Marca:</label>
+          
           <select name="marca" value={formData.marca} onChange={handleChange} required>
-            <option value="">-- Seleccionar Marca --</option>
-            {listaMarcas.map(m => (
-              <option key={m._id} value={m.nombre}>{m.nombre}</option>
-            ))}
+            <option value="">-- Marca --</option>
+            {listaMarcas.map(m => <option key={m._id} value={m.nombre}>{m.nombre}</option>)}
           </select>
-          <label>Categoría:</label>
-          <select name="categoria" value={formData.categoria} onChange={handleChange} required>
-            <option value="">-- Seleccionar Categoría --</option>
-            {listaCategorias.map(c => (
-              <option key={c._id} value={c.nombre}>{c.nombre}</option>
-            ))}
-          </select>
-          <input type="number" name="precio" placeholder="Precio" value={formData.precio} onChange={handleChange} required />
-          <input type="number" name="stock" placeholder="Stock" value={formData.stock} onChange={handleChange} required />
-          <textarea name="descripcion" placeholder="Descripción" value={formData.descripcion} onChange={handleChange} required />
-          
-          {/* INPUT DE ARCHIVO (REEMPLAZA AL TEXTO MANUAL) */}
-          <label style={{fontWeight: 'bold', fontSize: '14px'}}>Imagen del producto:</label>
-          <input type="file" onChange={handleFileChange} accept="image/*" />
-          
-          {subiendo && <p style={{color: 'blue'}}>Subiendo imagen a la nube...</p>}
-          
-          {/* Previsualización de la imagen si ya existe */}
-          {formData.imagen && (
-            <img src={formData.imagen} alt="Vista previa" style={{ width: '100px', height: '100px', objectFit: 'cover', margin: '0 auto' }} />
-          )}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-            <button type="button" onClick={cerrarFormulario} style={{ background: '#ccc', border: 'none', padding: '10px', cursor: 'pointer' }}>
-              Cancelar
-            </button>
-            <button 
-              type="submit" 
-              disabled={subiendo} // Deshabilitar botón si está subiendo foto
-              style={{ background: '#007bff', color: 'white', border: 'none', padding: '10px', cursor: 'pointer', opacity: subiendo ? 0.5 : 1 }}
-            >
-              {productoEditar ? 'Guardar Cambios' : 'Crear Producto'}
-            </button>
+          <select name="categoria" value={formData.categoria} onChange={handleChange} required>
+            <option value="">-- Categoría --</option>
+            {listaCategorias.map(c => <option key={c._id} value={c.nombre}>{c.nombre}</option>)}
+          </select>
+
+          <input type="number" name="precio" placeholder="Precio" value={formData.precio} onChange={handleChange} required />
+          
+          <textarea name="descripcion" placeholder="Descripción" value={formData.descripcion} onChange={handleChange} required />
+
+          {/* --- SECCION DE STOCK INTELIGENTE --- */}
+          <div style={{ border: '1px solid #ddd', padding: '10px', borderRadius: '5px', background: '#f9f9f9' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold', marginBottom: '10px' }}>
+              <input 
+                type="checkbox" 
+                name="tieneColores" 
+                checked={formData.tieneColores} 
+                onChange={handleChange} 
+              />
+              ¿Este producto tiene variantes de color?
+            </label>
+
+            {!formData.tieneColores ? (
+              // CASO A: STOCK SIMPLE
+              <input 
+                type="number" 
+                name="stock" 
+                placeholder="Cantidad de Stock Total" 
+                value={formData.stock} 
+                onChange={handleChange} 
+                required={!formData.tieneColores} // Solo requerido si NO tiene colores
+              />
+            ) : (
+              // CASO B: STOCK POR COLORES
+              <div>
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>Agrega el stock disponible por cada color:</p>
+                
+                {/* Inputs para agregar nueva variante */}
+                <div style={{ display: 'flex', gap: '5px', marginBottom: '10px' }}>
+                  <select 
+                    value={varianteTemp.colorSeleccionado}
+                    onChange={e => setVarianteTemp({ ...varianteTemp, colorSeleccionado: e.target.value })}
+                    style={{ flex: 1 }}
+                  >
+                    <option value="">- Elegir Color -</option>
+                    {listaColores.map(c => <option key={c._id} value={c.nombre}>{c.nombre}</option>)}
+                  </select>
+                  
+                  <input 
+                    type="number" 
+                    placeholder="Cant." 
+                    style={{ width: '70px' }}
+                    value={varianteTemp.cantidad}
+                    onChange={e => setVarianteTemp({ ...varianteTemp, cantidad: e.target.value })}
+                  />
+                  
+                  <button type="button" onClick={agregarVariante} style={{ background: '#28a745', color: 'white', border: 'none' }}>+</button>
+                </div>
+
+                {/* Lista de variantes agregadas */}
+                <ul style={{ listStyle: 'none', padding: 0 }}>
+                  {formData.stockPorColor.map((item, idx) => (
+                    <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px', borderBottom: '1px solid #eee' }}>
+                      <span>{item.nombre} - <strong>{item.cantidad} u.</strong></span>
+                      <button 
+                        type="button" 
+                        onClick={() => eliminarVariante(item.nombre)}
+                        style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}
+                      >
+                        X
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                
+                {/* Calculadora visual del total */}
+                <div style={{ textAlign: 'right', fontSize: '0.9rem', fontWeight: 'bold', marginTop: '5px' }}>
+                   Stock Total Calculado: {formData.stockPorColor.reduce((acc, it) => acc + Number(it.cantidad), 0)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <label style={{fontWeight: 'bold', fontSize: '14px', marginTop: '10px'}}>Imagen:</label>
+          <input type="file" onChange={handleFileChange} accept="image/*" />
+          {subiendo && <p>Subiendo...</p>}
+          {formData.imagen && <img src={formData.imagen} alt="Vista previa" style={{ width: '80px', height: '80px', objectFit: 'cover', margin: '0 auto' }} />}
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+            <button type="button" onClick={cerrarFormulario} style={{ background: '#ccc', border: 'none', padding: '10px' }}>Cancelar</button>
+            <button type="submit" disabled={subiendo} style={{ background: '#007bff', color: 'white', border: 'none', padding: '10px' }}>Guardar</button>
           </div>
         </form>
       </div>
