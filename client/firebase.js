@@ -1,22 +1,17 @@
-// Import the functions you need from the SDKs you need
+// client/src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAXroR1PKKgcWyPkmuwb3V6AL3kKuzVB1s",
-  authDomain: "napa-marroquineria-4c90d.firebaseapp.com",
-  projectId: "napa-marroquineria-4c90d",
-  storageBucket: "napa-marroquineria-4c90d.firebasestorage.app",
-  messagingSenderId: "181163187596",
-  appId: "1:181163187596:web:9b78e576f6f77b7dff0aa9"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-// Exportamos solo el servicio de almacenamiento (Storage)
 export const storage = getStorage(app);
 export const auth = getAuth(app);
