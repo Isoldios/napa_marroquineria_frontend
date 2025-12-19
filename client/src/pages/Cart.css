@@ -1,0 +1,209 @@
+/* client/src/pages/Cart.css */
+
+.cart-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.cart-title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: var(--primary);
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+/* --- ESTRUCTURA GRID DESKTOP --- */
+.cart-header-row {
+  display: grid;
+  /* 5 columnas: Producto (grande) | Precio | Cantidad | Subtotal | Borrar */
+  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
+  padding: 15px;
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: var(--text-light);
+  border-bottom: 2px solid #ddd;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
+  align-items: center;
+  padding: 20px 15px;
+  background: white;
+  border-bottom: 1px solid #eee;
+  gap: 15px;
+}
+
+/* Estilos de los elementos internos */
+.c-img-container {
+  float: left; /* Para que el texto flote al lado en la celda 1 */
+  margin-right: 15px;
+}
+
+.c-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+.c-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.c-brand, .c-variant {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.c-qty {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centrado en desktop */
+  gap: 8px;
+  background: #f5f5f5;
+  padding: 5px;
+  border-radius: 4px;
+  width: fit-content;
+  margin: 0 auto; /* Centrar bloque */
+}
+
+.btn-qty {
+  width: 25px;
+  height: 25px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.qty-number {
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.c-subtotal {
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-align: right;
+}
+
+.c-del {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.3s;
+}
+
+.c-del:hover {
+  color: #ff4d4d;
+}
+
+.cart-actions-row {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-empty {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .cart-header-row, .c-price {
+    display: none;
+  }
+
+  .cart-item {
+    display: grid;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    margin-bottom: 15px;
+    
+    /* --- CAMBIOS AQUÍ PARA QUE ENTRE TODO --- */
+    padding: 12px; /* Menos relleno interno */
+    gap: 10px;     /* Menos espacio entre elementos */
+    
+    /* Reducimos la columna de la foto a 70px y ajustamos el resto */
+    grid-template-columns: 70px 1fr auto; 
+    grid-template-rows: auto auto;
+    
+    grid-template-areas:
+      "foto info info"
+      "tacho control precio";
+  }
+
+  /* Ajustamos la imagen al nuevo ancho de columna */
+  .c-img-container { grid-area: foto; margin: 0; }
+  .c-img { width: 70px; height: 70px; } 
+
+  .c-info { grid-area: info; justify-content: flex-start; }
+  
+  /* Icono de borrar a la izquierda */
+  .c-del { 
+    grid-area: tacho; 
+    justify-self: start; 
+    align-self: center;
+    color: #999;
+    padding: 5px; /* Aumentar área de click */
+  }
+
+  /* Controles centrados pero compactos */
+  .c-qty { 
+    grid-area: control; 
+    justify-self: center; 
+    align-self: center;
+    margin: 0;
+    /* Forzamos que los botones no sean gigantes */
+    gap: 5px; 
+    padding: 3px;
+  }
+  .btn-qty { width: 28px; height: 28px; } /* Botones un poco más táctiles */
+
+  /* Precio a la derecha, letra ajustada */
+  .c-subtotal { 
+    grid-area: precio; 
+    justify-self: end; 
+    align-self: center;
+    font-size: 0.9rem; /* Un pelín más chico para que no desborde */
+    color: var(--primary);
+    white-space: nowrap; /* Evita que el precio se parta en dos líneas */
+  }
+}
+/* RESUMEN DE COMPRA (Igual que antes) */
+.cart-summary {
+  background-color: #fcfcfc;
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  margin-top: 30px;
+  text-align: right;
+}
+
+.btn-whatsapp {
+  background-color: #25D366;
+  color: white;
+  padding: 15px 30px;
+  font-weight: 700;
+  border: none;
+  border-radius: 50px;
+  width: 100%; /* Botón ancho en móvil */
+  max-width: 300px;
+  margin-top: 15px;
+  cursor: pointer;
+}

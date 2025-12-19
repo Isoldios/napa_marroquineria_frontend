@@ -1,0 +1,123 @@
+/* client/src/pages/Login.css */
+.auth-container {
+  min-height: 80vh; /* Que ocupe casi toda la pantalla vertical */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.auth-card {
+  background-color: var(--white);
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Sombra elegante */
+  text-align: center;
+}
+
+.auth-title {
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.3s;
+  background-color: #fafafa;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: #fff;
+}
+
+.btn-primary {
+  padding: 12px;
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+}
+
+.auth-separator {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.auth-separator::before, .auth-separator::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #eee;
+  margin: 0 10px;
+}
+
+.btn-google {
+  width: 100%;
+  padding: 12px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  color: var(--text-main);
+  transition: background 0.2s;
+}
+
+.btn-google:hover {
+  background-color: #f9f9f9;
+}
+
+.auth-toggle {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 5px;
+}
+
+.error-msg {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}

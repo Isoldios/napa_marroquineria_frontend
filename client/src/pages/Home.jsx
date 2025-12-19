@@ -1,122 +1,107 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
+import './Home.css'; // <--- IMPORTAR CSS
 
 const Home = () => {
-  // Estados de datos
-  const [productos, setProductos] = useState([]); // Todos los productos (Base)
-  const [productosFiltrados, setProductosFiltrados] = useState([]); // Los que se ven en pantalla
+  const [productos, setProductos] = useState([]);
+  const [filtroTexto, setFiltroTexto] = useState('');
+  const [filtroMarca, setFiltroMarca] = useState('');
+  const [filtroCategoria, setFiltroCategoria] = useState('');
+  
+  // Listas para los selects
   const [marcas, setMarcas] = useState([]);
   const [categorias, setCategorias] = useState([]);
 
-  // Estados de los filtros seleccionados
-  const [filtroMarca, setFiltroMarca] = useState('');
-  const [filtroCategoria, setFiltroCategoria] = useState('');
+  const API_URL = `${import.meta.env.VITE_API_URL}/productos`;
+  const API_AUX = `${import.meta.env.VITE_API_URL}/auxiliares`;
 
-  // URLs CON EL FORMATO SOLICITADO
-  const API_PRODUCTOS = `${import.meta.env.VITE_API_URL}/productos`;
-  const API_AUXILIARES = `${import.meta.env.VITE_API_URL}/auxiliares`;
-
-  // 1. Cargar Datos Iniciales (Productos y Listas)
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        // Hacemos las peticiones en paralelo para que sea más rápido
-        const [resProd, resMarcas, resCat] = await Promise.all([
-          axios.get(API_PRODUCTOS),
-          axios.get(`${API_AUXILIARES}/marcas`),
-          axios.get(`${API_AUXILIARES}/categorias`)
-        ]);
-
+        const resProd = await axios.get(API_URL);
         setProductos(resProd.data);
-        setProductosFiltrados(resProd.data); // Al inicio, mostramos todos
+
+        const resMarcas = await axios.get(`${API_AUX}/marcas`);
         setMarcas(resMarcas.data);
+
+        const resCat = await axios.get(`${API_AUX}/categorias`);
         setCategorias(resCat.data);
       } catch (error) {
-        console.error("Error al cargar datos:", error);
+        console.error("Error cargando datos", error);
       }
     };
-
     cargarDatos();
   }, []);
 
-  // 2. Efecto para Aplicar Filtros
-  // Se ejecuta cada vez que cambia un filtro o la lista de productos
-  useEffect(() => {
-    let resultado = productos;
+  const productosFiltrados = productos.filter((prod) => {
+    const coincideTexto = prod.nombre.toLowerCase().includes(filtroTexto.toLowerCase());
+    const coincideMarca = filtroMarca ? prod.marca === filtroMarca : true;
+    const coincideCat = filtroCategoria ? prod.categoria === filtroCategoria : true;
+    return coincideTexto && coincideMarca && coincideCat;
+  });
 
-    if (filtroMarca) {
-      resultado = resultado.filter(p => p.marca === filtroMarca);
-    }
-
-    if (filtroCategoria) {
-      resultado = resultado.filter(p => p.categoria === filtroCategoria);
-    }
-
-    setProductosFiltrados(resultado);
-  }, [filtroMarca, filtroCategoria, productos]);
-
+  const limpiarFiltros = () => {
+    setFiltroTexto('');
+    setFiltroMarca('');
+    setFiltroCategoria('');
+  };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>Napa Marroquinería</h1>
+    <div className="home-container">
       
-      {/* --- BARRA DE FILTROS --- */}
-      <div style={{ 
-        background: '#f4f4f4', padding: '15px', borderRadius: '8px', 
-        marginBottom: '30px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap'
-      }}>
-        <strong>Filtrar por:</strong>
-        
-        {/* Select Marca */}
+      {/* HEADER */}
+      <div className="home-header">
+        <h1 className="home-title">Colección Exclusiva</h1>
+        <p className="home-subtitle">Encuentra la calidad que buscas en cuero Napa</p>
+      </div>
+
+      {/* BARRA DE FILTROS */}
+      <div className="filters-bar">
+        <input 
+          type="text" 
+          placeholder="Buscar carteras, bolsos..." 
+          value={filtroTexto} 
+          onChange={(e) => setFiltroTexto(e.target.value)}
+          className="search-input"
+        />
+
         <select 
           value={filtroMarca} 
           onChange={(e) => setFiltroMarca(e.target.value)}
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+          className="filter-select"
         >
           <option value="">Todas las Marcas</option>
-          {marcas.map(m => (
-            <option key={m._id} value={m.nombre}>{m.nombre}</option>
-          ))}
+          {marcas.map(m => <option key={m._id} value={m.nombre}>{m.nombre}</option>)}
         </select>
 
-        {/* Select Categoría */}
         <select 
           value={filtroCategoria} 
           onChange={(e) => setFiltroCategoria(e.target.value)}
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+          className="filter-select"
         >
           <option value="">Todas las Categorías</option>
-          {categorias.map(c => (
-            <option key={c._id} value={c.nombre}>{c.nombre}</option>
-          ))}
+          {categorias.map(c => <option key={c._id} value={c.nombre}>{c.nombre}</option>)}
         </select>
 
-        {/* Botón limpiar filtros (Opcional pero útil) */}
-        {(filtroMarca || filtroCategoria) && (
-          <button 
-            onClick={() => { setFiltroMarca(''); setFiltroCategoria(''); }}
-            style={{ padding: '8px 15px', background: '#666', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-          >
-            Limpiar Filtros
-          </button>
-        )}
-
-        <span style={{ marginLeft: 'auto', color: '#666' }}>
-          Mostrando: {productosFiltrados.length} productos
-        </span>
+        <button onClick={limpiarFiltros} className="btn-clear">
+          Limpiar
+        </button>
       </div>
 
-      {/* --- GRILLA DE PRODUCTOS --- */}
-      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+      {/* GRILLA DE PRODUCTOS */}
+      <div className="products-grid">
         {productosFiltrados.length > 0 ? (
           productosFiltrados.map((producto) => (
             <ProductCard key={producto._id} producto={producto} />
           ))
         ) : (
-          <p style={{ width: '100%', textAlign: 'center', fontSize: '1.2rem', color: '#888' }}>
-            No se encontraron productos con esos filtros.
-          </p>
+          <div className="no-results">
+            <p>No encontramos productos que coincidan con tu búsqueda 😢</p>
+            <button onClick={limpiarFiltros} style={{marginTop: '10px', color: '#007bff', background:'none', border:'none', cursor:'pointer', textDecoration:'underline'}}>
+              Ver todo el catálogo
+            </button>
+          </div>
         )}
       </div>
     </div>

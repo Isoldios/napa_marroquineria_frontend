@@ -1,0 +1,95 @@
+/* client/src/pages/Home.css */
+.home-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.home-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.home-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--primary);
+}
+
+.home-subtitle {
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+/* --- FILTROS --- */
+.filters-bar {
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 30px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap; /* En celular bajan de línea */
+  align-items: center;
+}
+
+.search-input {
+  flex: 2; /* El buscador ocupa más espacio */
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  font-family: inherit;
+  min-width: 200px;
+}
+
+.filter-select {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: var(--radius);
+  font-family: inherit;
+  min-width: 150px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.btn-clear {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: var(--radius);
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.btn-clear:hover {
+  background: #eee;
+  color: var(--text-main);
+}
+
+/* --- GRILLA DE PRODUCTOS (LA MAGIA) --- */
+.products-grid {
+  display: grid;
+  /* Esto crea columnas automáticas que miden mínimo 260px */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 30px; /* Espacio entre tarjetas */
+  justify-content: center;
+}
+
+.no-results {
+  text-align: center;
+  padding: 50px;
+  color: var(--text-light);
+  font-size: 1.2rem;
+  grid-column: 1 / -1; /* Ocupa todo el ancho */
+}
+
+/* Responsive para celular muy chico */
+@media (max-width: 600px) {
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch; /* Estira los inputs al 100% del ancho */
+  }
+}

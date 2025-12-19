@@ -1,128 +1,223 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import FormularioProducto from '../components/FormularioProducto';
 import GestorAuxiliares from '../components/GestorAuxiliares';
+import FormularioProducto from '../components/FormularioProducto';
+import { useAuth } from '../context/AuthContext';
+import './AdminPanel.css'; // <--- IMPORTAR EL NUEVO CSS
 
 const AdminPanel = () => {
   const [productos, setProductos] = useState([]);
-  const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [productoAEditar, setProductoAEditar] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  
+  // Estados para Modal y Auxiliares
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [mostrarAux, setMostrarAux] = useState(false);
+  const [productoEditar, setProductoEditar] = useState(null);
 
-  const API_URL = `${import.meta.env.VITE_API_URL}/productos`; 
+  // ESTADOS DE FILTROS (Igual que en Home)
+  const [filtroTexto, setFiltroTexto] = useState('');
+  const [filtroMarca, setFiltroMarca] = useState('');
+  const [filtroCategoria, setFiltroCategoria] = useState('');
+  
+  // Listas para los selects de filtro
+  const [listaMarcas, setListaMarcas] = useState([]);
+  const [listaCategorias, setListaCategorias] = useState([]);
 
-  const obtenerProductos = async () => {
+  const API_URL = `${import.meta.env.VITE_API_URL}/productos`;
+  const API_AUX = `${import.meta.env.VITE_API_URL}/auxiliares`;
+
+  const cargarDatos = async () => {
     try {
-      const respuesta = await axios.get(API_URL);
-      setProductos(respuesta.data);
+      setCargando(true);
+      const [resProd, resMarcas, resCat] = await Promise.all([
+        axios.get(API_URL),
+        axios.get(`${API_AUX}/marcas`),
+        axios.get(`${API_AUX}/categorias`)
+      ]);
+      setProductos(resProd.data);
+      setListaMarcas(resMarcas.data);
+      setListaCategorias(resCat.data);
     } catch (error) {
-      console.error("Error:", error);
+      console.error(error);
+    } finally {
+      setCargando(false);
     }
   };
 
   useEffect(() => {
-    obtenerProductos();
+    cargarDatos();
   }, []);
 
-  const eliminarProducto = async (id) => {
-    if (window.confirm('¿Seguro deseas eliminar?')) {
-      try {
-        await axios.delete(`${API_URL}/${id}`);
-        obtenerProductos();
-      } catch (error) {
-        alert('Error al eliminar');
-      }
-    }
-  };
+  // --- LÓGICA DE FILTRADO ---
+  const productosFiltrados = productos.filter(prod => {
+    const coincideTexto = prod.nombre.toLowerCase().includes(filtroTexto.toLowerCase());
+    const coincideMarca = filtroMarca ? prod.marca === filtroMarca : true;
+    const coincideCat = filtroCategoria ? prod.categoria === filtroCategoria : true;
+    return coincideTexto && coincideMarca && coincideCat;
+  });
 
-  // Función para manejar el GUARDADO (Crear o Editar)
-  const guardarProducto = async (datos) => {
+  // --- CRUD FUNCIONES ---
+  const guardarProducto = async (producto) => {
     try {
-      if (productoAEditar) {
-        // MODO EDICIÓN (PUT)
-        await axios.put(`${API_URL}/${productoAEditar._id}`, datos);
-        alert('Producto actualizado');
+      if (producto._id) {
+        await axios.put(`${API_URL}/${producto._id}`, producto);
       } else {
-        // MODO CREACIÓN (POST)
-        await axios.post(API_URL, datos);
-        alert('Producto creado');
+        await axios.post(API_URL, producto);
       }
-      
-      setMostrarFormulario(false);
-      setProductoAEditar(null);
-      obtenerProductos(); // Recargar tabla
+      cargarDatos();
+      setMostrarForm(false);
+      setProductoEditar(null);
     } catch (error) {
-      console.error("Error al guardar:", error);
-      alert('Hubo un error al guardar');
+      alert("Error al guardar");
     }
   };
 
-  // Funciones auxiliares para abrir/cerrar modal
-  const abrirParaCrear = () => {
-    setProductoAEditar(null);
-    setMostrarFormulario(true);
+  const eliminarProducto = async (id) => {
+    if (!window.confirm('¿Seguro que quieres eliminar este producto?')) return;
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      cargarDatos();
+    } catch (error) {
+      alert("Error al eliminar");
+    }
   };
 
-  const abrirParaEditar = (producto) => {
-    setProductoAEditar(producto);
-    setMostrarFormulario(true);
+  const abrirEditar = (prod) => {
+    setProductoEditar(prod);
+    setMostrarForm(true);
+  };
+
+  const cerrarModal = () => {
+    setMostrarForm(false);
+    setProductoEditar(null);
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Panel de Administración</h1>
+    <div className="admin-container">
       
-      <button 
-        onClick={abrirParaCrear}
-        style={{ marginBottom: '20px', padding: '10px', background: '#28a745', color: 'white', border: 'none', cursor: 'pointer' }}
-      >
-        + Agregar Nuevo Producto
-      </button>
+      {/* CABECERA */}
+      <div className="admin-header">
+        <h1 className="admin-title">Panel de Administración</h1>
+      </div>
 
-      {/* Renderizado condicional del Modal */}
-      {mostrarFormulario && (
+      {/* BARRA DE HERRAMIENTAS Y FILTROS */}
+      <div className="admin-toolbar">
+        
+        {/* Botones de Acción */}
+        <div className="admin-actions">
+          <button className="btn-new" onClick={() => { setProductoEditar(null); setMostrarForm(true); }}>
+            + Nuevo Producto
+          </button>
+          <button className="btn-aux" onClick={() => setMostrarAux(!mostrarAux)}>
+            {mostrarAux ? 'Ocultar Auxiliares' : '⚙️ Gestionar Marcas/Categorías'}
+          </button>
+        </div>
+
+        {/* Filtros */}
+        <div className="admin-filters">
+          <input 
+            className="filter-input search-main"
+            type="text" 
+            placeholder="Buscar por nombre..." 
+            value={filtroTexto}
+            onChange={e => setFiltroTexto(e.target.value)}
+          />
+          <select className="filter-select" value={filtroMarca} onChange={e => setFiltroMarca(e.target.value)}>
+            <option value="">Todas las Marcas</option>
+            {listaMarcas.map(m => <option key={m._id} value={m.nombre}>{m.nombre}</option>)}
+          </select>
+          <select className="filter-select" value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}>
+            <option value="">Todas las Categorías</option>
+            {listaCategorias.map(c => <option key={c._id} value={c.nombre}>{c.nombre}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {/* PANEL DE AUXILIARES (Desplegable) */}
+      {mostrarAux && (
+        <div className="aux-panel">
+          <GestorAuxiliares />
+        </div>
+      )}
+
+      {/* TABLA DE PRODUCTOS */}
+      <div className="table-container">
+        {cargando ? <p style={{padding: '20px'}}>Cargando...</p> : (
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Img</th>
+                <th>Nombre</th>
+                <th>Marca / Cat.</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {productosFiltrados.map(prod => {
+                // Cálculo visual de stock
+                const stockReal = prod.tieneColores 
+                  ? prod.stockPorColor.reduce((acc, el) => acc + Number(el.cantidad), 0)
+                  : prod.stock;
+                
+                let stockClass = 'in-stock';
+                if (stockReal === 0) stockClass = 'no-stock';
+                else if (stockReal < 5) stockClass = 'low-stock';
+
+                return (
+                  <tr key={prod._id}>
+                    <td data-label="Imagen">
+                      <img src={prod.imagen || 'https://via.placeholder.com/50'} alt="" className="img-thumb"/>
+                    </td>
+                    <td data-label="Nombre">
+                      <strong>{prod.nombre}</strong>
+                      {prod.tieneColores && <div style={{fontSize:'0.8rem', color:'#666'}}>Variantes activas</div>}
+                    </td>
+                    <td data-label="Detalle">
+                      {prod.marca} <br/> <small>{prod.categoria}</small>
+                    </td>
+                    <td data-label="Precio">
+                      ${prod.precio}
+                    </td>
+                    <td data-label="Stock">
+                      <span className={`stock-badge ${stockClass}`}>
+                        {stockReal} u.
+                      </span>
+                    </td>
+                    <td data-label="Acciones">
+                      <div className="actions-cell">
+                        <button className="btn-icon btn-edit" title="Editar" onClick={() => abrirEditar(prod)}>
+                          ✏️
+                        </button>
+                        <button className="btn-icon btn-delete" title="Eliminar" onClick={() => eliminarProducto(prod._id)}>
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {productosFiltrados.length === 0 && (
+                <tr>
+                  <td colSpan="6" style={{textAlign:'center', padding:'30px'}}>
+                    No se encontraron productos con esos filtros.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* MODAL FORMULARIO */}
+      {mostrarForm && (
         <FormularioProducto 
-          productoEditar={productoAEditar}
-          cerrarFormulario={() => setMostrarFormulario(false)}
+          productoEditar={productoEditar}
+          cerrarFormulario={cerrarModal}
           alGuardar={guardarProducto}
         />
       )}
-
-      <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ background: '#f4f4f4' }}>
-            <th>Nombre</th>
-            <th>Marca</th>
-            <th>Precio</th>
-            <th>Stock</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {productos.map((prod) => (
-            <tr key={prod._id}>
-              <td>{prod.nombre}</td>
-              <td>{prod.marca}</td>
-              <td>${prod.precio}</td>
-              <td>{prod.stock}</td>
-              <td>
-                <button 
-                  onClick={() => eliminarProducto(prod._id)}
-                  style={{ background: 'red', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer', marginRight: '5px' }}
-                >
-                  Eliminar
-                </button>
-                <button 
-                  onClick={() => abrirParaEditar(prod)}
-                  style={{ background: '#ffc107', border: 'none', padding: '5px 10px', cursor: 'pointer' }}
-                >
-                  Editar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <GestorAuxiliares />
     </div>
   );
 };

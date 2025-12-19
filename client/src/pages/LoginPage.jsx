@@ -1,19 +1,18 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './Login.css';
 
 const LoginPage = () => {
     const { login, registrarse, loginGoogle } = useAuth();
     const navigate = useNavigate();
 
-    const [isRegister, setIsRegister] = useState(false); // Toggle simple
+    const [isRegister, setIsRegister] = useState(false);
     const [error, setError] = useState('');
     
-    // Datos Formulario
+    // Form Data
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    
-    // Datos solo para Registro
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [direccion, setDireccion] = useState('');
@@ -23,68 +22,62 @@ const LoginPage = () => {
         setError('');
         try {
             if (isRegister) {
-                // Registro completo
                 await registrarse(email, password, { nombre, telefono, direccion });
             } else {
-                // Login normal
                 await login(email, password);
             }
             navigate('/');
         } catch (err) {
-            setError('Error: Verifica tus datos (' + err.message + ')');
+            setError('Error: Verifica tus credenciales o intenta de nuevo.');
         }
     };
 
     const handleGoogle = async () => {
         try {
             await loginGoogle();
-            navigate('/'); // App.jsx se encargará de redirigir si faltan datos
-        } catch (err) { setError('Error con Google'); }
+            navigate('/');
+        } catch (err) { setError('Error iniciando con Google'); }
     };
 
     return (
-        <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-            <h2>{isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}</h2>
-            
-            {error && <p style={{ color: 'red', fontSize: '0.9rem' }}>{error}</p>}
-
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="auth-container">
+            <div className="auth-card">
+                <h2 className="auth-title">{isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}</h2>
                 
-                {isRegister && (
-                    <>
-                        <input type="text" placeholder="Nombre Completo" required value={nombre} onChange={e => setNombre(e.target.value)} style={{ padding: '8px' }}/>
-                        <input type="tel" placeholder="Teléfono" required value={telefono} onChange={e => setTelefono(e.target.value)} style={{ padding: '8px' }}/>
-                        <input type="text" placeholder="Dirección" required value={direccion} onChange={e => setDireccion(e.target.value)} style={{ padding: '8px' }}/>
-                    </>
-                )}
+                {error && <div className="error-msg">{error}</div>}
 
-                <input type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} style={{ padding: '8px' }}/>
-                <input type="password" placeholder="Contraseña" required value={password} onChange={e => setPassword(e.target.value)} style={{ padding: '8px' }}/>
+                <form onSubmit={handleSubmit} className="auth-form">
+                    
+                    {isRegister && (
+                        <>
+                            <input className="form-input" type="text" placeholder="Nombre Completo" required value={nombre} onChange={e => setNombre(e.target.value)} />
+                            <input className="form-input" type="tel" placeholder="Teléfono" required value={telefono} onChange={e => setTelefono(e.target.value)} />
+                            <input className="form-input" type="text" placeholder="Dirección" required value={direccion} onChange={e => setDireccion(e.target.value)} />
+                        </>
+                    )}
+
+                    <input className="form-input" type="email" placeholder="Email" required value={email} onChange={e => setEmail(e.target.value)} />
+                    <input className="form-input" type="password" placeholder="Contraseña" required value={password} onChange={e => setPassword(e.target.value)} />
+                    
+                    <button type="submit" className="btn-primary">
+                        {isRegister ? 'Registrarse' : 'Ingresar'}
+                    </button>
+                </form>
+
+                <div className="auth-separator">o continúa con</div>
                 
-                <button type="submit" style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer' }}>
-                    {isRegister ? 'Registrarse' : 'Ingresar'}
+                <button onClick={handleGoogle} className="btn-google">
+                    <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.715H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+                    Google
                 </button>
-            </form>
 
-            <div style={{ margin: '20px 0', textAlign: 'center', borderBottom: '1px solid #eee', lineHeight: '0.1em' }}>
-                <span style={{ background:'#fff', padding:'0 10px' }}>o</span>
+                <p className="auth-toggle">
+                    {isRegister ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}
+                    <button onClick={() => setIsRegister(!isRegister)} className="btn-link">
+                        {isRegister ? 'Inicia Sesión' : 'Regístrate'}
+                    </button>
+                </p>
             </div>
-            
-            <button onClick={handleGoogle} style={{ width: '100%', padding: '10px', background: '#DB4437', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                {/* SVG simple de Google */}
-                <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.715H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-                Continuar con Google
-            </button>
-
-            <p style={{ marginTop: '15px', textAlign: 'center' }}>
-                {isRegister ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}
-                <button 
-                    onClick={() => setIsRegister(!isRegister)} 
-                    style={{ background: 'none', border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer', marginLeft: '5px' }}
-                >
-                    {isRegister ? 'Inicia Sesión' : 'Regístrate'}
-                </button>
-            </p>
         </div>
     );
 };

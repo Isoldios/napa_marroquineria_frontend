@@ -1,111 +1,156 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import './GestorAuxiliares.css'; // <--- IMPORTAR EL CSS
 
 const GestorAuxiliares = () => {
-  // Estados para guardar lo que viene de BD
   const [marcas, setMarcas] = useState([]);
   const [categorias, setCategorias] = useState([]);
-  
-  // Estados para los inputs
+  const [colores, setColores] = useState([]);
+
+  // Inputs controlados
   const [nuevaMarca, setNuevaMarca] = useState('');
   const [nuevaCategoria, setNuevaCategoria] = useState('');
-  const [colores, setColores] = useState([]);
   const [nuevoColor, setNuevoColor] = useState('');
 
-  // URLs (Ajustar si usas Render)
-  const API_URL = `${import.meta.env.VITE_API_URL}/auxiliares`; 
+  const API_AUX = `${import.meta.env.VITE_API_URL}/auxiliares`;
 
-  // Cargar datos iniciales
-  const cargarDatos = async () => {
+  // Cargar datos
+  const cargarAuxiliares = async () => {
     try {
-      const resMarcas = await axios.get(`${API_URL}/marcas`);
-      const resCategorias = await axios.get(`${API_URL}/categorias`);
-      const resColores = await axios.get(`${API_URL}/colores`);
-      setMarcas(resMarcas.data);
-      setCategorias(resCategorias.data);
-      setColores(resColores.data);
+      const [resM, resC, resCol] = await Promise.all([
+        axios.get(`${API_AUX}/marcas`),
+        axios.get(`${API_AUX}/categorias`),
+        axios.get(`${API_AUX}/colores`)
+      ]);
+      setMarcas(resM.data);
+      setCategorias(resC.data);
+      setColores(resCol.data);
     } catch (error) {
-      console.error(error);
+      console.error("Error cargando auxiliares", error);
     }
   };
 
   useEffect(() => {
-    cargarDatos();
+    cargarAuxiliares();
   }, []);
 
-  // Función genérica para guardar
-  const guardar = async (tipo) => {
+  // Guardar (Genérico)
+  const guardar = async (tipo, valor, setValor) => {
+    if (!valor.trim()) return;
     try {
-      if (tipo === 'marca') {
-        await axios.post(`${API_URL}/marcas`, { nombre: nuevaMarca });
-        setNuevaMarca('');
-      } 
-      else if (tipo === 'categoria') {
-        await axios.post(`${API_URL}/categorias`, { nombre: nuevaCategoria });
-        setNuevaCategoria('');
-      }
-      else if (tipo === 'color') {
-        await axios.post(`${API_URL}/colores`, { nombre: nuevoColor });
-        setNuevoColor('');
-      }
-      cargarDatos(); // Recargar listas
+      let endpoint = '';
+      let payload = {};
+
+      if (tipo === 'marca') { endpoint = 'marcas'; payload = { nombre: valor }; }
+      if (tipo === 'categoria') { endpoint = 'categorias'; payload = { nombre: valor }; }
+      if (tipo === 'color') { endpoint = 'colores'; payload = { nombre: valor }; }
+
+      await axios.post(`${API_AUX}/${endpoint}`, payload);
+      setValor(''); // Limpiar input
+      cargarAuxiliares(); // Recargar listas
     } catch (error) {
-      alert('Error al guardar (quizás ya existe)');
+      alert('Error al guardar');
+    }
+  };
+
+  // Eliminar (Genérico)
+  const eliminar = async (tipo, id) => {
+    if (!window.confirm('¿Eliminar este elemento?')) return;
+    try {
+      let endpoint = '';
+      if (tipo === 'marca') endpoint = 'marcas';
+      if (tipo === 'categoria') endpoint = 'categorias';
+      if (tipo === 'color') endpoint = 'colores';
+
+      await axios.delete(`${API_AUX}/${endpoint}/${id}`);
+      cargarAuxiliares();
+    } catch (error) {
+      alert('Error al eliminar');
     }
   };
 
   return (
-    <div style={{ padding: '20px', background: '#f9f9f9', marginTop: '20px', borderRadius: '8px' }}>
-      <h3>Gestión de Marcas y Categorías</h3>
-      
-      <div style={{ display: 'flex', gap: '50px' }}>
-        {/* SECCION MARCAS */}
-        <div>
-          <h4>Marcas</h4>
-          <ul>
-            {marcas.map(m => <li key={m._id}>{m.nombre}</li>)}
-          </ul>
-          <div style={{ display: 'flex', gap: '5px' }}>
+    <div className="aux-container">
+      <div className="aux-grid">
+        
+        {/* TARJETA MARCAS */}
+        <div className="aux-card">
+          <h3 className="aux-title">Marcas</h3>
+          
+          <div className="aux-list">
+            {marcas.map(m => (
+              <div key={m._id} className="aux-tag">
+                {m.nombre}
+                <button className="btn-delete-tag" onClick={() => eliminar('marca', m._id)}>×</button>
+              </div>
+            ))}
+          </div>
+
+          <div className="aux-form">
             <input 
+              className="aux-input"
               value={nuevaMarca} 
               onChange={e => setNuevaMarca(e.target.value)} 
               placeholder="Nueva Marca" 
             />
-            <button onClick={() => guardar('marca')}>Agregar</button>
+            <button className="btn-add-aux" onClick={() => guardar('marca', nuevaMarca, setNuevaMarca)}>
+              +
+            </button>
           </div>
         </div>
 
-        {/* SECCION CATEGORIAS */}
-        <div>
-          <h4>Categorías</h4>
-          <ul>
-            {categorias.map(c => <li key={c._id}>{c.nombre}</li>)}
-          </ul>
-          <div style={{ display: 'flex', gap: '5px' }}>
+        {/* TARJETA CATEGORÍAS */}
+        <div className="aux-card">
+          <h3 className="aux-title">Categorías</h3>
+          
+          <div className="aux-list">
+            {categorias.map(c => (
+              <div key={c._id} className="aux-tag">
+                {c.nombre}
+                <button className="btn-delete-tag" onClick={() => eliminar('categoria', c._id)}>×</button>
+              </div>
+            ))}
+          </div>
+
+          <div className="aux-form">
             <input 
+              className="aux-input"
               value={nuevaCategoria} 
               onChange={e => setNuevaCategoria(e.target.value)} 
               placeholder="Nueva Categoría" 
             />
-            <button onClick={() => guardar('categoria')}>Agregar</button>
+            <button className="btn-add-aux" onClick={() => guardar('categoria', nuevaCategoria, setNuevaCategoria)}>
+              +
+            </button>
           </div>
         </div>
 
-        {/* SECCION COLORES */}
-        <div>
-          <h4>Colores</h4>
-          <ul>
-            {colores.map(c => <li key={c._id}>{c.nombre}</li>)}
-          </ul>
-          <div style={{ display: 'flex', gap: '5px' }}>
+        {/* TARJETA COLORES */}
+        <div className="aux-card">
+          <h3 className="aux-title">Colores</h3>
+          
+          <div className="aux-list">
+            {colores.map(c => (
+              <div key={c._id} className="aux-tag">
+                {c.nombre}
+                <button className="btn-delete-tag" onClick={() => eliminar('color', c._id)}>×</button>
+              </div>
+            ))}
+          </div>
+
+          <div className="aux-form">
             <input 
+              className="aux-input"
               value={nuevoColor} 
               onChange={e => setNuevoColor(e.target.value)} 
               placeholder="Nuevo Color" 
             />
-            <button onClick={() => guardar('color')}>Agregar</button>
+            <button className="btn-add-aux" onClick={() => guardar('color', nuevoColor, setNuevoColor)}>
+              +
+            </button>
           </div>
         </div>
+
       </div>
     </div>
   );
