@@ -2,7 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import AdminPanel from './pages/AdminPanel';
-import Navbar from './components/Navbar';
+import NavBar from './components/NavBar';
 import CartPage from './pages/CartPage';
 import LoginPage from './pages/LoginPage';
 import CompletarPerfil from './pages/CompletarPerfil';
@@ -18,7 +18,7 @@ const RutaPrivadaAdmin = ({ children }) => {
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
+      <NavBar />
       <Routes>
         {/* Rutas Públicas (Cualquiera puede ver productos y armar carrito) */}
         <Route path="/" element={<Home />} />
