@@ -1,5 +1,48 @@
 /* client/src/pages/AdminPanel.css */
+/* Agrega esto al principio de AdminPanel.css */
 
+.admin-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.admin-tabs {
+  display: flex;
+  background-color: #e0e0e0;
+  padding: 5px;
+  border-radius: 50px; /* Píldora redondeada */
+}
+
+.tab-btn {
+  padding: 10px 25px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  border-radius: 40px;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.tab-btn.active {
+  background-color: var(--primary); /* Negro */
+  color: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .admin-container {
   max-width: 1200px;
   margin: 30px auto;

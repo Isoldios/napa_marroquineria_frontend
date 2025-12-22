@@ -1,0 +1,220 @@
+/* client/src/components/AdminVentas.css */
+
+.ventas-container {
+  padding: 10px 0;
+  position: relative; /* Para el modal */
+}
+
+/* --- BARRA DE FILTROS --- */
+.ventas-toolbar {
+  display: flex;
+  gap: 15px;
+  background-color: white;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 2;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-width: 200px;
+}
+
+.status-filter {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-width: 150px;
+}
+
+/* --- LISTA DE TARJETAS (Resumidas) --- */
+.ordenes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.orden-card {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  transition: transform 0.2s;
+}
+
+.orden-card:hover {
+  border-color: var(--primary);
+}
+
+.orden-summary-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.orden-id {
+  font-weight: 800;
+  color: var(--primary);
+  font-family: monospace;
+}
+
+.orden-cliente {
+  font-size: 0.9rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.orden-total-mini {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Acciones en la tarjeta */
+.orden-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-detalle {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn-detalle:hover {
+  background-color: #000;
+}
+
+/* Select de estado (reutilizado pero más chico) */
+.estado-select-mini {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.estado-select-mini.pendiente { background-color: #fff3cd; color: #856404; }
+.estado-select-mini.pagado { background-color: #d1ecf1; color: #0c5460; }
+.estado-select-mini.enviado { background-color: #d4edda; color: #155724; }
+.estado-select-mini.entregado { background-color: #c3e6cb; color: #155724; }
+.estado-select-mini.cancelado { background-color: #f8d7da; color: #721c24; }
+
+/* --- PAGINACIÓN --- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.page-btn {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- MODAL (Overlay y Contenido) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+  backdrop-filter: blur(3px);
+}
+
+.modal-content {
+  background: white;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  border-radius: 12px;
+  overflow-y: auto; /* Scroll interno si es muy largo */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9f9f9;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #888;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+/* Estilos de productos dentro del modal */
+.modal-prod-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 0;
+  border-bottom: 1px dashed #eee;
+}
+
+.modal-prod-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+.modal-prod-info {
+  flex: 1;
+}
+
+/* Responsive del toolbar */
+@media (max-width: 600px) {
+  .ventas-toolbar { flex-direction: column; }
+  .orden-card { flex-direction: column; align-items: flex-start; }
+  .orden-actions { width: 100%; justify-content: space-between; }
+}
