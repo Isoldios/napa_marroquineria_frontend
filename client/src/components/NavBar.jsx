@@ -36,6 +36,7 @@ const Navbar = () => {
           {/* Sección Usuario */}
           {user ? (
             <div className="user-info">
+              <Link to="/mis-compras" style={{marginRight:'10px', fontWeight:'bold'}}>Mis Compras</Link>
               <span>Hola, {userData?.nombre?.split(' ')[0] || 'Cliente'}</span>
               <button onClick={logout} className="btn-logout">Salir</button>
             </div>

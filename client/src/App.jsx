@@ -6,6 +6,7 @@ import NavBar from './components/NavBar';
 import CartPage from './pages/CartPage';
 import LoginPage from './pages/LoginPage';
 import CompletarPerfil from './pages/CompletarPerfil';
+import MisCompras from './pages/MisCompras';
 import { useAuth } from './context/AuthContext';
 
 const RutaPrivadaAdmin = ({ children }) => {
@@ -23,6 +24,7 @@ function App() {
         {/* Rutas Públicas (Cualquiera puede ver productos y armar carrito) */}
         <Route path="/" element={<Home />} />
         <Route path="/carrito" element={<CartPage />} />
+        <Route path="/mis-compras" element={<MisCompras />} />
         
         <Route path="/login" element={<LoginPage />} />
         

@@ -2,24 +2,24 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import GestorAuxiliares from '../components/GestorAuxiliares';
 import FormularioProducto from '../components/FormularioProducto';
-import { useAuth } from '../context/AuthContext';
-import './AdminPanel.css'; // <--- IMPORTAR EL NUEVO CSS
+import AdminVentas from '../components/AdminVentas'; // <--- 1. IMPORTANTE: IMPORTAR COMPONENTE
+import './AdminPanel.css';
 
 const AdminPanel = () => {
+  // Estado para controlar las pestañas: 'productos' o 'ventas'
+  const [tab, setTab] = useState('productos'); 
+
+  // --- ESTADOS DE PRODUCTOS ---
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
-  
-  // Estados para Modal y Auxiliares
   const [mostrarForm, setMostrarForm] = useState(false);
   const [mostrarAux, setMostrarAux] = useState(false);
   const [productoEditar, setProductoEditar] = useState(null);
 
-  // ESTADOS DE FILTROS (Igual que en Home)
+  // --- ESTADOS DE FILTROS ---
   const [filtroTexto, setFiltroTexto] = useState('');
   const [filtroMarca, setFiltroMarca] = useState('');
   const [filtroCategoria, setFiltroCategoria] = useState('');
-  
-  // Listas para los selects de filtro
   const [listaMarcas, setListaMarcas] = useState([]);
   const [listaCategorias, setListaCategorias] = useState([]);
 
@@ -56,7 +56,7 @@ const AdminPanel = () => {
     return coincideTexto && coincideMarca && coincideCat;
   });
 
-  // --- CRUD FUNCIONES ---
+  // --- FUNCIONES CRUD ---
   const guardarProducto = async (producto) => {
     try {
       if (producto._id) {
@@ -95,128 +95,146 @@ const AdminPanel = () => {
   return (
     <div className="admin-container">
       
-      {/* CABECERA */}
-      <div className="admin-header">
+      {/* CABECERA CON PESTAÑAS */}
+      <div className="admin-header-row">
         <h1 className="admin-title">Panel de Administración</h1>
-      </div>
-
-      {/* BARRA DE HERRAMIENTAS Y FILTROS */}
-      <div className="admin-toolbar">
         
-        {/* Botones de Acción */}
-        <div className="admin-actions">
-          <button className="btn-new" onClick={() => { setProductoEditar(null); setMostrarForm(true); }}>
-            + Nuevo Producto
-          </button>
-          <button className="btn-aux" onClick={() => setMostrarAux(!mostrarAux)}>
-            {mostrarAux ? 'Ocultar Auxiliares' : '⚙️ Gestionar Marcas/Categorías'}
-          </button>
-        </div>
-
-        {/* Filtros */}
-        <div className="admin-filters">
-          <input 
-            className="filter-input search-main"
-            type="text" 
-            placeholder="Buscar por nombre..." 
-            value={filtroTexto}
-            onChange={e => setFiltroTexto(e.target.value)}
-          />
-          <select className="filter-select" value={filtroMarca} onChange={e => setFiltroMarca(e.target.value)}>
-            <option value="">Todas las Marcas</option>
-            {listaMarcas.map(m => <option key={m._id} value={m.nombre}>{m.nombre}</option>)}
-          </select>
-          <select className="filter-select" value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}>
-            <option value="">Todas las Categorías</option>
-            {listaCategorias.map(c => <option key={c._id} value={c.nombre}>{c.nombre}</option>)}
-          </select>
+        {/* 2. BOTONES DE PESTAÑAS */}
+        <div className="admin-tabs">
+            <button 
+                className={`tab-btn ${tab === 'productos' ? 'active' : ''}`} 
+                onClick={() => setTab('productos')}
+            >
+                📦 Productos
+            </button>
+            <button 
+                className={`tab-btn ${tab === 'ventas' ? 'active' : ''}`} 
+                onClick={() => setTab('ventas')}
+            >
+                💰 Ventas
+            </button>
         </div>
       </div>
 
-      {/* PANEL DE AUXILIARES (Desplegable) */}
-      {mostrarAux && (
-        <div className="aux-panel">
-          <GestorAuxiliares />
-        </div>
+      {/* --- CONTENIDO CONDICIONAL --- */}
+      
+      {/* VISTA A: GESTIÓN DE VENTAS */}
+      {tab === 'ventas' && (
+          <div className="fade-in">
+              <AdminVentas />
+          </div>
       )}
 
-      {/* TABLA DE PRODUCTOS */}
-      <div className="table-container">
-        {cargando ? <p style={{padding: '20px'}}>Cargando...</p> : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Img</th>
-                <th>Nombre</th>
-                <th>Marca / Cat.</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productosFiltrados.map(prod => {
-                // Cálculo visual de stock
-                const stockReal = prod.tieneColores 
-                  ? prod.stockPorColor.reduce((acc, el) => acc + Number(el.cantidad), 0)
-                  : prod.stock;
-                
-                let stockClass = 'in-stock';
-                if (stockReal === 0) stockClass = 'no-stock';
-                else if (stockReal < 5) stockClass = 'low-stock';
+      {/* VISTA B: GESTIÓN DE PRODUCTOS (Todo tu código anterior) */}
+      {tab === 'productos' && (
+        <div className="fade-in">
+            {/* BARRA DE HERRAMIENTAS */}
+            <div className="admin-toolbar">
+                <div className="admin-actions">
+                <button className="btn-new" onClick={() => { setProductoEditar(null); setMostrarForm(true); }}>
+                    + Nuevo Producto
+                </button>
+                <button className="btn-aux" onClick={() => setMostrarAux(!mostrarAux)}>
+                    {mostrarAux ? 'Ocultar Auxiliares' : '⚙️ Gestionar Marcas/Categorías'}
+                </button>
+                </div>
 
-                return (
-                  <tr key={prod._id}>
-                    <td data-label="Imagen">
-                      <img src={prod.imagen || 'https://via.placeholder.com/50'} alt="" className="img-thumb"/>
-                    </td>
-                    <td data-label="Nombre">
-                      <strong>{prod.nombre}</strong>
-                      {prod.tieneColores && <div style={{fontSize:'0.8rem', color:'#666'}}>Variantes activas</div>}
-                    </td>
-                    <td data-label="Detalle">
-                      {prod.marca} <br/> <small>{prod.categoria}</small>
-                    </td>
-                    <td data-label="Precio">
-                      ${prod.precio}
-                    </td>
-                    <td data-label="Stock">
-                      <span className={`stock-badge ${stockClass}`}>
-                        {stockReal} u.
-                      </span>
-                    </td>
-                    <td data-label="Acciones">
-                      <div className="actions-cell">
-                        <button className="btn-icon btn-edit" title="Editar" onClick={() => abrirEditar(prod)}>
-                          ✏️
-                        </button>
-                        <button className="btn-icon btn-delete" title="Eliminar" onClick={() => eliminarProducto(prod._id)}>
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {productosFiltrados.length === 0 && (
-                <tr>
-                  <td colSpan="6" style={{textAlign:'center', padding:'30px'}}>
-                    No se encontraron productos con esos filtros.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
+                <div className="admin-filters">
+                <input 
+                    className="filter-input search-main"
+                    type="text" 
+                    placeholder="Buscar por nombre..." 
+                    value={filtroTexto}
+                    onChange={e => setFiltroTexto(e.target.value)}
+                />
+                <select className="filter-select" value={filtroMarca} onChange={e => setFiltroMarca(e.target.value)}>
+                    <option value="">Todas las Marcas</option>
+                    {listaMarcas.map(m => <option key={m._id} value={m.nombre}>{m.nombre}</option>)}
+                </select>
+                <select className="filter-select" value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}>
+                    <option value="">Todas las Categorías</option>
+                    {listaCategorias.map(c => <option key={c._id} value={c.nombre}>{c.nombre}</option>)}
+                </select>
+                </div>
+            </div>
 
-      {/* MODAL FORMULARIO */}
-      {mostrarForm && (
-        <FormularioProducto 
-          productoEditar={productoEditar}
-          cerrarFormulario={cerrarModal}
-          alGuardar={guardarProducto}
-        />
+            {/* PANEL AUXILIARES */}
+            {mostrarAux && (
+                <div className="aux-panel">
+                <GestorAuxiliares />
+                </div>
+            )}
+
+            {/* TABLA PRODUCTOS */}
+            <div className="table-container">
+                {cargando ? <p style={{padding: '20px'}}>Cargando...</p> : (
+                <table className="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Img</th>
+                        <th>Nombre</th>
+                        <th>Marca / Cat.</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {productosFiltrados.map(prod => {
+                        const stockReal = prod.tieneColores 
+                        ? prod.stockPorColor.reduce((acc, el) => acc + Number(el.cantidad), 0)
+                        : prod.stock;
+                        
+                        let stockClass = 'in-stock';
+                        if (stockReal === 0) stockClass = 'no-stock';
+                        else if (stockReal < 5) stockClass = 'low-stock';
+
+                        return (
+                        <tr key={prod._id}>
+                            <td data-label="Imagen">
+                            <img src={prod.imagen || 'https://via.placeholder.com/50'} alt="" className="img-thumb"/>
+                            </td>
+                            <td data-label="Nombre">
+                            <strong>{prod.nombre}</strong>
+                            {prod.tieneColores && <div style={{fontSize:'0.8rem', color:'#666'}}>Variantes</div>}
+                            </td>
+                            <td data-label="Detalle">
+                            {prod.marca} <br/> <small>{prod.categoria}</small>
+                            </td>
+                            <td data-label="Precio">
+                            ${prod.precio}
+                            </td>
+                            <td data-label="Stock">
+                            <span className={`stock-badge ${stockClass}`}>
+                                {stockReal} u.
+                            </span>
+                            </td>
+                            <td data-label="Acciones">
+                            <div className="actions-cell">
+                                <button className="btn-icon btn-edit" title="Editar" onClick={() => abrirEditar(prod)}>✏️</button>
+                                <button className="btn-icon btn-delete" title="Eliminar" onClick={() => eliminarProducto(prod._id)}>🗑️</button>
+                            </div>
+                            </td>
+                        </tr>
+                        );
+                    })}
+                    {productosFiltrados.length === 0 && (
+                        <tr><td colSpan="6" style={{textAlign:'center', padding:'30px'}}>No se encontraron productos.</td></tr>
+                    )}
+                    </tbody>
+                </table>
+                )}
+            </div>
+
+            {/* MODAL FORMULARIO */}
+            {mostrarForm && (
+                <FormularioProducto 
+                productoEditar={productoEditar}
+                cerrarFormulario={cerrarModal}
+                alGuardar={guardarProducto}
+                />
+            )}
+        </div>
       )}
     </div>
   );
