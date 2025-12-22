@@ -1,0 +1,89 @@
+.compras-container {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+.compras-container h2 {
+  margin-bottom: 20px;
+  color: var(--primary);
+  text-align: center;
+}
+
+.lista-ordenes {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.orden-card-cliente {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.orden-card-cliente:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.orden-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.orden-fecha {
+  color: #666;
+  font-weight: 500;
+}
+
+.estado-tag {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Colores de estado */
+.estado-tag.pendiente { background: #fff3cd; color: #856404; }
+.estado-tag.pagado { background: #d1ecf1; color: #0c5460; }
+.estado-tag.enviado { background: #d4edda; color: #155724; }
+.estado-tag.entregado { background: #c3e6cb; color: #155724; }
+
+.item-resumen {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.orden-footer {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px dashed #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-label { font-weight: 600; color: #555; }
+.total-monto { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
+
+.btn-back {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: var(--accent);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+}

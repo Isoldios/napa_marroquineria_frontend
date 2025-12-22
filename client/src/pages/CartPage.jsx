@@ -25,6 +25,7 @@ const CartPage = () => {
 
     setProcesando(true);
     try {
+        // 1. Guardar en Base de Datos (Igual que antes)
         const nuevaOrden = {
             usuario: userData._id,
             productos: carrito.map(prod => ({
@@ -42,15 +43,50 @@ const CartPage = () => {
         const respuesta = await axios.post(API_URL, nuevaOrden);
         const ordenIdCorta = respuesta.data._id.slice(-6).toUpperCase(); 
 
-        const numeroNegocio = '5491112345678'; 
-        let mensaje = `Hola! 👋 Soy *${userData.nombre}*.\nHe registrado el *Pedido #${ordenIdCorta}* en la web.\n\nDetalle:\n`;
-        carrito.forEach((prod) => {
-            mensaje += `🔹 *${prod.cantidad}x* ${prod.nombre} ${prod.colorSeleccionado ? `(${prod.colorSeleccionado})` : ''}\n`;
+        // 2. LÓGICA DE AGRUPACIÓN PARA WHATSAPP
+        const grupos = {};
+
+        // Paso A: Organizar el carrito en un objeto { Marca: { Categoria: [Productos] } }
+        carrito.forEach(prod => {
+            const marca = prod.marca || 'Otras Marcas';
+            const categoria = prod.categoria || 'Varios';
+
+            if (!grupos[marca]) grupos[marca] = {};
+            if (!grupos[marca][categoria]) grupos[marca][categoria] = [];
+
+            grupos[marca][categoria].push(prod);
         });
-        mensaje += `\n💰 *TOTAL: $${totalCompra}*\n`;
+
+        // Paso B: Construir el mensaje de texto recorriendo los grupos
+        const numeroNegocio = '+5491135595047'; 
+        let mensaje = `Hola! 👋 Soy *${userData.nombre}*.\n`;
+        mensaje += `He registrado el *Pedido #${ordenIdCorta}* en la web.\n\n`;
+        mensaje += `📝 *DETALLE DEL PEDIDO:*\n`;
+
+        // Recorremos las Marcas
+        Object.keys(grupos).sort().forEach(marca => {
+            mensaje += `\n⚫ *MARCA: ${marca.toUpperCase()}*\n`; 
+
+            const categorias = grupos[marca];
+            
+            // Recorremos las Categorías dentro de la Marca
+            Object.keys(categorias).sort().forEach(cat => {
+                mensaje += `   📂 _${cat}_\n`; 
+
+                // Listamos los productos
+                categorias[cat].forEach(prod => {
+                    const variante = prod.colorSeleccionado ? `(${prod.colorSeleccionado})` : '';
+                    mensaje += `      ▪️ *${prod.cantidad}x* ${prod.nombre} ${variante}\n`;
+                });
+            });
+            mensaje += `────────────────\n`; // Separador entre marcas
+        });
+
+        mensaje += `\n💰 *TOTAL A PAGAR: $${totalCompra}*\n`;
         
         window.open(`https://wa.me/${numeroNegocio}?text=${encodeURIComponent(mensaje)}`, '_blank');
         vaciarCarrito();
+
     } catch (error) {
         console.error("Error", error);
         alert("Hubo un error al procesar el pedido.");
@@ -72,9 +108,8 @@ const CartPage = () => {
     <div className="cart-container">
       <h1 className="cart-title">Tu Carrito ({carrito.length} u.)</h1>
 
-      {/* --- NUEVA ESTRUCTURA GRID (Reemplaza a la tabla) --- */}
+      {/* --- ESTRUCTURA GRID --- */}
       <div className="cart-grid">
-        {/* Encabezados (Solo visible en PC) */}
         <div className="cart-header-row">
           <span>Producto</span>
           <span>Precio Unit.</span>
@@ -83,38 +118,30 @@ const CartPage = () => {
           <span style={{textAlign: 'center'}}>Borrar</span>
         </div>
 
-        {/* Lista de Items */}
         {carrito.map((prod) => (
           <div key={prod.cartItemId} className="cart-item">
             
-            {/* 1. Imagen */}
             <div className="c-img-container">
                <img src={prod.imagen || 'https://via.placeholder.com/60'} alt={prod.nombre} className="c-img" />
             </div>
 
-            {/* 2. Info (Nombre, Marca, Color) */}
             <div className="c-info">
               <strong>{prod.nombre}</strong>
               <span className="c-brand">{prod.marca}</span>
               {prod.colorSeleccionado && <span className="c-variant">Color: {prod.colorSeleccionado}</span>}
             </div>
 
-            {/* 3. Precio Unitario (Se oculta en móvil) */}
             <div className="c-price">${prod.precio}</div>
 
-            {/* 4. Controles de Cantidad */}
             <div className="c-qty">
               <button className="btn-qty" onClick={() => disminuirCantidad(prod.cartItemId)}>-</button>
               <span className="qty-number">{prod.cantidad}</span>
               <button className="btn-qty" onClick={() => agregarAlCarrito(prod, prod.colorSeleccionado)}>+</button>
             </div>
 
-            {/* 5. Subtotal */}
             <div className="c-subtotal">${prod.precio * prod.cantidad}</div>
 
-            {/* 6. Botón Borrar */}
             <button className="c-del" onClick={() => eliminarDelCarrito(prod.cartItemId)}>
-                {/* Icono tacho de basura SVG */}
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </button>
           </div>

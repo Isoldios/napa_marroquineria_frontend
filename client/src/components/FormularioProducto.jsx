@@ -141,7 +141,7 @@ const FormularioProducto = ({ productoEditar, cerrarFormulario, alGuardar }) => 
 
           <input type="number" name="precio" placeholder="Precio" value={formData.precio} onChange={handleChange} required />
           
-          <textarea name="descripcion" placeholder="Descripción" value={formData.descripcion} onChange={handleChange} required />
+          <textarea name="descripcion" placeholder="Descripción" value={formData.descripcion} onChange={handleChange} />
 
           {/* --- SECCION DE STOCK INTELIGENTE --- */}
           <div style={{ border: '1px solid #ddd', padding: '10px', borderRadius: '5px', background: '#f9f9f9' }}>
